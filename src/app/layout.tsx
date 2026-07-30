@@ -19,8 +19,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900">
           <Nav />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-zinc-200 bg-white py-6 text-center text-sm text-zinc-500">
-            RecipeWizard — Powered by Groq AI
+
+          <footer className="relative mt-auto overflow-hidden border-t border-zinc-200 bg-white">
+            {/* top hairline accent */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+
+            <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-b from-white to-emerald-50 text-base shadow-sm ring-1 ring-emerald-500/10">
+                    🧙‍♂️
+                  </span>
+                  <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-sm font-semibold tracking-tight text-transparent">
+                    RecipeWizard
+                  </span>
+                </div>
+
+                <p className="text-sm text-zinc-500">
+                  Powered by{" "}
+                  <span className="font-medium text-zinc-700">Groq AI</span>
+                </p>
+
+                <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                  <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                  <span>&copy; {new Date().getFullYear()} RecipeWizard. All rights reserved.</span>
+                </div>
+              </div>
+            </div>
           </footer>
         </body>
       </html>
