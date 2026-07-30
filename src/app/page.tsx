@@ -13,25 +13,49 @@ export default function HomePage() {
       </p>
       <Link
         href="/generate"
-        className="rounded-full bg-emerald-600 px-8 py-3 text-lg font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+        className="rounded-full bg-emerald-600 px-8 py-3 text-lg font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 hover:shadow-md"
       >
         Generate a Recipe
       </Link>
+      
       <div className="mt-16 grid gap-6 sm:grid-cols-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 text-left">
-          <div className="mb-2 text-2xl">🥘</div>
-          <h3 className="mb-1 font-semibold">Any Ingredients</h3>
-          <p className="text-sm text-zinc-500">Works with whatever you have in your pantry or fridge.</p>
+        {/* Card 1 */}
+        <div className="group rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-md hover:shadow-emerald-500/5">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-xl transition-transform duration-300 group-hover:scale-110">
+            🥘
+          </div>
+          <h3 className="mb-1 font-semibold text-zinc-900 transition-colors group-hover:text-emerald-700">
+            Any Ingredients
+          </h3>
+          <p className="text-sm text-zinc-500 leading-relaxed">
+            Works with whatever you have in your pantry or fridge.
+          </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 text-left">
-          <div className="mb-2 text-2xl">🥗</div>
-          <h3 className="mb-1 font-semibold">Dietary Preferences</h3>
-          <p className="text-sm text-zinc-500">Vegan, gluten-free, keto, and more — we&apos;ve got you covered.</p>
+
+        {/* Card 2 */}
+        <div className="group rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-md hover:shadow-emerald-500/5">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-xl transition-transform duration-300 group-hover:scale-110">
+            🥗
+          </div>
+          <h3 className="mb-1 font-semibold text-zinc-900 transition-colors group-hover:text-emerald-700">
+            Dietary Preferences
+          </h3>
+          <p className="text-sm text-zinc-500 leading-relaxed">
+            Vegan, gluten-free, keto, and more — we&apos;ve got you covered.
+          </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 text-left">
-          <div className="mb-2 text-2xl">⚡</div>
-          <h3 className="mb-1 font-semibold">Fast & Simple</h3>
-          <p className="text-sm text-zinc-500">AI-generated recipes in seconds, saved to your profile.</p>
+
+        {/* Card 3 */}
+        <div className="group rounded-xl border border-zinc-200/80 bg-white/70 p-6 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-md hover:shadow-emerald-500/5">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-xl transition-transform duration-300 group-hover:scale-110">
+            ⚡
+          </div>
+          <h3 className="mb-1 font-semibold text-zinc-900 transition-colors group-hover:text-emerald-700">
+            Fast & Simple
+          </h3>
+          <p className="text-sm text-zinc-500 leading-relaxed">
+            AI-generated recipes in seconds, saved to your profile.
+          </p>
         </div>
       </div>
     </div>
