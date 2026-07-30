@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { cookies } from "next/headers"
+import { auth } from "@clerk/nextjs/server"
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
-    const cookieStore = await cookies()
-    const userId = cookieStore.get("recipe_uid")?.value
-
+    const session = await auth()
+    const userId = session.userId
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const { id } = await params
 
     const recipe = await prisma.recipe.findUnique({ where: { id } })
     if (!recipe) {

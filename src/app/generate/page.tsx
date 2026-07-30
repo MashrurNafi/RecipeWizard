@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@clerk/nextjs"
 
 const DIETARY_OPTIONS = ["vegan", "vegetarian", "gluten-free", "keto", "paleo", "dairy-free", "low-carb", "nut-free"]
 const CUISINE_OPTIONS = [
@@ -11,12 +12,23 @@ const CUISINE_OPTIONS = [
 
 export default function GeneratePage() {
   const router = useRouter()
+  const { isSignedIn } = useAuth()
   const [ingredientsInput, setIngredientsInput] = useState("")
   const [dietary, setDietary] = useState<string[]>([])
   const [cuisine, setCuisine] = useState("")
   const [timeMinutes, setTimeMinutes] = useState(30)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  if (!isSignedIn) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 text-center sm:px-6">
+        <div className="mb-4 text-4xl">🔒</div>
+        <h1 className="mb-2 text-2xl font-bold">Sign in to Generate Recipes</h1>
+        <p className="text-zinc-600">You need to be signed in to use the AI recipe generator.</p>
+      </div>
+    )
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()

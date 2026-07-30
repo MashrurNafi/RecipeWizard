@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Groq from "groq-sdk"
 import { prisma } from "@/lib/prisma"
-import { cookies } from "next/headers"
-import { v4 as uuidv4 } from "uuid"
+import { auth } from "@clerk/nextjs/server"
 import crypto from "node:crypto"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
@@ -28,12 +27,6 @@ function parseRecipe(raw: string): GroqRecipe | null {
   }
 }
 
-function getOrCreateUserId(cookieStore: Awaited<ReturnType<typeof cookies>>): string {
-  const existing = cookieStore.get("recipe_uid")?.value
-  if (existing) return existing
-  return uuidv4()
-}
-
 function cacheKey(ingredients: string[], dietary: string[], cuisine: string, timeMinutes: number): string {
   return crypto.createHash("md5").update(JSON.stringify({ ingredients, dietary, cuisine, timeMinutes })).digest("hex")
 }
@@ -42,7 +35,7 @@ const responseCache = new Map<string, { recipeId: string; expiresAt: number }>()
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT = 5
+const RATE_LIMIT = 10
 const RATE_WINDOW_MS = 60_000
 
 function checkRateLimit(userId: string): boolean {
@@ -59,21 +52,16 @@ function checkRateLimit(userId: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    const userId = session.userId
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const { ingredients, dietary, cuisine, timeMinutes } = await request.json()
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json({ error: "At least one ingredient is required" }, { status: 400 })
-    }
-
-    const cookieStore = await cookies()
-    const userId = getOrCreateUserId(cookieStore)
-    if (!cookieStore.get("recipe_uid")) {
-      cookieStore.set("recipe_uid", userId, {
-        maxAge: 365 * 24 * 60 * 60,
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-      })
     }
 
     const key = cacheKey(ingredients, dietary || [], cuisine || "", timeMinutes || 30)

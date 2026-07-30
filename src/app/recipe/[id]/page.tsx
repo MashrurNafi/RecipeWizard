@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import DeleteButton from "./DeleteButton"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
@@ -10,6 +12,9 @@ interface PageProps {
 
 export default async function RecipePage({ params }: PageProps) {
   const { id } = await params
+  const session = await auth()
+  const userId = session.userId
+
   const recipe = await prisma.recipe.findUnique({ where: { id } })
 
   if (!recipe) {
@@ -19,6 +24,7 @@ export default async function RecipePage({ params }: PageProps) {
   const ingredients = recipe.ingredients as { name: string; quantity: string }[]
   const steps = recipe.steps as string[]
   const dietary = recipe.dietary as string[]
+  const isOwner = userId && recipe.userId === userId
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -42,7 +48,7 @@ export default async function RecipePage({ params }: PageProps) {
             </div>
           )}
         </div>
-        <DeleteButton recipeId={recipe.id} />
+        {isOwner && <DeleteButton recipeId={recipe.id} />}
       </div>
 
       <section className="mb-8">
@@ -71,6 +77,12 @@ export default async function RecipePage({ params }: PageProps) {
           ))}
         </ol>
       </section>
+
+      {!userId && (
+        <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 text-center">
+          <p className="mb-2 text-sm text-zinc-600">Sign in to save and manage your recipes.</p>
+        </div>
+      )}
     </div>
   )
 }

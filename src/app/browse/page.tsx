@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import RecipeCard from "@/components/RecipeCard"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
@@ -20,12 +21,12 @@ export default async function BrowsePage() {
           <div className="mb-3 text-4xl">🌱</div>
           <p className="mb-1 text-lg font-medium text-zinc-700">No recipes yet</p>
           <p className="mb-4 text-sm text-zinc-500">Be the first to generate and share a recipe!</p>
-          <a
+          <Link
             href="/generate"
             className="inline-block rounded-full bg-emerald-600 px-6 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             Generate a Recipe
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -7,6 +7,8 @@ interface RecipeCardProps {
   timeMinutes: number
   servings: number
   dietary: string[]
+  showUser?: boolean
+  userEmail?: string | null
 }
 
 const CUISINE_EMOJI: Record<string, string> = {
@@ -24,7 +26,7 @@ const CUISINE_EMOJI: Record<string, string> = {
   lebanese: "🥙",
 }
 
-export default function RecipeCard({ id, title, cuisine, timeMinutes, servings, dietary }: RecipeCardProps) {
+export default function RecipeCard({ id, title, cuisine, timeMinutes, servings, dietary, showUser, userEmail }: RecipeCardProps) {
   const emoji = cuisine ? CUISINE_EMOJI[cuisine.toLowerCase()] : null
 
   return (
@@ -49,6 +51,9 @@ export default function RecipeCard({ id, title, cuisine, timeMinutes, servings, 
             </span>
           ))}
         </div>
+      )}
+      {showUser && userEmail && (
+        <p className="mt-2 text-xs text-zinc-400 truncate">by {userEmail}</p>
       )}
     </Link>
   )

@@ -14,6 +14,8 @@ export default function DeleteButton({ recipeId }: { recipeId: string }) {
       const res = await fetch(`/api/recipe/${recipeId}`, { method: "DELETE" })
       if (res.ok) {
         router.push("/saved")
+      } else {
+        setDeleting(false)
       }
     } catch {
       setDeleting(false)
