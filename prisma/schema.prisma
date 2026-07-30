@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  title       String
+  servings    Int
+  timeMinutes Int
+  ingredients Json
+  steps       Json
+  cuisine     String?
+  dietary     String[]
+  createdAt   DateTime @default(now())
+  userId      String
+  isPublic    Boolean  @default(true)
+}
