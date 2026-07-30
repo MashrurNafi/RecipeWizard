@@ -3,20 +3,12 @@ import Groq from "groq-sdk"
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
 import { v4 as uuidv4 } from "uuid"
+import crypto from "node:crypto"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-const SYSTEM_PROMPT = `You are a recipe generator. Respond with ONLY valid JSON, no markdown fences, no commentary.
-The JSON must exactly match this schema:
-{
-  "title": "string",
-  "servings": "number",
-  "timeMinutes": "number",
-  "cuisine": "string",
-  "dietary": ["string"],
-  "ingredients": [{ "name": "string", "quantity": "string" }],
-  "steps": ["string"]
-}`
+const SYSTEM_PROMPT = `Generate a recipe in JSON only:
+{"title":"string","servings":0,"timeMinutes":0,"cuisine":"string","dietary":["string"],"ingredients":[{"name":"string","quantity":"string"}],"steps":["string"]}`
 
 interface GroqRecipe {
   title: string
@@ -39,8 +31,30 @@ function parseRecipe(raw: string): GroqRecipe | null {
 function getOrCreateUserId(cookieStore: Awaited<ReturnType<typeof cookies>>): string {
   const existing = cookieStore.get("recipe_uid")?.value
   if (existing) return existing
-  const newId = uuidv4()
-  return newId
+  return uuidv4()
+}
+
+function cacheKey(ingredients: string[], dietary: string[], cuisine: string, timeMinutes: number): string {
+  return crypto.createHash("md5").update(JSON.stringify({ ingredients, dietary, cuisine, timeMinutes })).digest("hex")
+}
+
+const responseCache = new Map<string, { recipeId: string; expiresAt: number }>()
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 5
+const RATE_WINDOW_MS = 60_000
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(userId)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT) return false
+  entry.count++
+  return true
 }
 
 export async function POST(request: NextRequest) {
@@ -51,17 +65,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "At least one ingredient is required" }, { status: 400 })
     }
 
-    const userPrompt = [
-      `Generate a recipe using these ingredients: ${ingredients.join(", ")}.`,
-      dietary?.length ? `Dietary preferences: ${dietary.join(", ")}.` : "",
-      cuisine ? `Cuisine: ${cuisine}.` : "",
-      timeMinutes ? `Maximum cooking time: ${timeMinutes} minutes.` : "",
-      "Respond with ONLY valid JSON matching the schema.",
-    ]
-      .filter(Boolean)
-      .join(" ")
+    const cookieStore = await cookies()
+    const userId = getOrCreateUserId(cookieStore)
+    if (!cookieStore.get("recipe_uid")) {
+      cookieStore.set("recipe_uid", userId, {
+        maxAge: 365 * 24 * 60 * 60,
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+      })
+    }
 
-    let content: string | null = null
+    const key = cacheKey(ingredients, dietary || [], cuisine || "", timeMinutes || 30)
+    const cached = responseCache.get(key)
+    if (cached && Date.now() < cached.expiresAt) {
+      const exists = await prisma.recipe.findUnique({ where: { id: cached.recipeId } })
+      if (exists) return NextResponse.json({ recipeId: cached.recipeId })
+      responseCache.delete(key)
+    }
+
+    if (!checkRateLimit(userId)) {
+      return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 })
+    }
+
+    const userPrompt = [
+      `Recipe with: ${ingredients.join(", ")}.`,
+      dietary?.length ? `Diet: ${dietary.join(", ")}.` : "",
+      cuisine ? `Cuisine: ${cuisine}.` : "",
+      timeMinutes ? `Max ${timeMinutes} min.` : "",
+    ].filter(Boolean).join(" ")
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -70,27 +102,16 @@ export async function POST(request: NextRequest) {
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: userPrompt },
           ],
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.1-8b-instant",
           temperature: 0.7,
+          max_tokens: 1024,
         })
 
-        content = completion.choices[0]?.message?.content ?? null
-        if (!content) throw new Error("Empty response from Groq")
+        const content = completion.choices[0]?.message?.content
+        if (!content) throw new Error("Empty response")
 
         const parsed = parseRecipe(content)
-        if (parsed && parsed.title && parsed.ingredients?.length && parsed.steps?.length) {
-          const cookieStore = await cookies()
-          const userId = getOrCreateUserId(cookieStore)
-
-          if (!cookieStore.get("recipe_uid")) {
-            cookieStore.set("recipe_uid", userId, {
-              maxAge: 365 * 24 * 60 * 60,
-              path: "/",
-              httpOnly: true,
-              sameSite: "lax",
-            })
-          }
-
+        if (parsed?.title && parsed.ingredients?.length && parsed.steps?.length) {
           const recipe = await prisma.recipe.create({
             data: {
               title: parsed.title,
@@ -105,10 +126,12 @@ export async function POST(request: NextRequest) {
             },
           })
 
+          responseCache.set(key, { recipeId: recipe.id, expiresAt: Date.now() + CACHE_TTL_MS })
+
           return NextResponse.json({ recipeId: recipe.id })
         }
       } catch {
-        if (attempt === 1) throw new Error("Failed to generate recipe after retries")
+        if (attempt === 1) throw new Error("Failed to generate recipe")
       }
     }
 
