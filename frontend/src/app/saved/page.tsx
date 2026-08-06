@@ -13,7 +13,8 @@ export default async function SavedPage() {
 
   let recipes: {
     id: string; title: string; cuisine: string | null; timeMinutes: number
-    servings: number; dietary: string[]
+    servings: number; dietary: string[]; source: "AI" | "MANUAL"
+    author: { firstName: string | null; imageUrl: string | null } | null
   }[] = []
   if (token) {
     try {
@@ -105,6 +106,10 @@ export default async function SavedPage() {
                   timeMinutes={recipe.timeMinutes}
                   servings={recipe.servings}
                   dietary={recipe.dietary as string[]}
+                  showUser
+                  authorFirstName={recipe.author?.firstName}
+                  authorImageUrl={recipe.author?.imageUrl}
+                  source={recipe.source}
                 />
               ))}
             </div>

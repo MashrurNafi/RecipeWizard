@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic"
 export default async function BrowsePage() {
   let recipes: {
     id: string; title: string; cuisine: string | null; timeMinutes: number
-    servings: number; dietary: string[]
+    servings: number; dietary: string[]; source: "AI" | "MANUAL"
+    author: { firstName: string | null; imageUrl: string | null } | null
   }[] = []
   try {
     const res = await fetch(`${BACKEND_URL}/api/recipe/public`, { cache: "no-store" })
@@ -46,6 +47,10 @@ export default async function BrowsePage() {
               timeMinutes={recipe.timeMinutes}
               servings={recipe.servings}
               dietary={recipe.dietary as string[]}
+              showUser
+              authorFirstName={recipe.author?.firstName}
+              authorImageUrl={recipe.author?.imageUrl}
+              source={recipe.source}
             />
           ))}
         </div>

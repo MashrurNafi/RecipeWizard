@@ -18,6 +18,7 @@ export async function getPublicRecipes() {
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 50,
+    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
   })
 }
 
@@ -25,11 +26,15 @@ export async function getUserRecipes(userId: string) {
   return prisma.recipe.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
   })
 }
 
 export async function getRecipeById(id: string) {
-  return prisma.recipe.findUnique({ where: { id } })
+  return prisma.recipe.findUnique({
+    where: { id },
+    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
+  })
 }
 
 export async function createRecipe(userId: string, data: RecipeCreateInput) {
@@ -43,6 +48,7 @@ export async function createRecipe(userId: string, data: RecipeCreateInput) {
       cuisine: data.cuisine ?? null,
       dietary: data.dietary ?? [],
       isPublic: data.isPublic ?? true,
+      source: "MANUAL" as const,
       userId,
     },
   })

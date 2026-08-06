@@ -1,3 +1,8 @@
+enum RecipeSource {
+  AI
+  MANUAL
+}
+
 model Recipe {
   id          String   @id @default(cuid())
   title       String
@@ -10,6 +15,7 @@ model Recipe {
   createdAt   DateTime @default(now())
   userId      String
   isPublic    Boolean  @default(true)
+  source      RecipeSource @default(AI)
 
   author   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   savedBy  SavedRecipe[]

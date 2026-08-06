@@ -32,7 +32,13 @@ export interface RecipeData {
   steps: string[]
   userId: string
   isPublic: boolean
+  source: "AI" | "MANUAL"
   createdAt: string
+  author?: {
+    firstName: string | null
+    lastName: string | null
+    imageUrl: string | null
+  } | null
 }
 
 export async function getPublicRecipes() {
@@ -56,4 +62,19 @@ export async function generateRecipe(
   token: string
 ) {
   return apiFetch("/api/generate", { method: "POST", body: data, token }) as Promise<{ recipeId: string }>
+}
+
+export interface CreateRecipeInput {
+  title: string
+  servings: number
+  timeMinutes: number
+  ingredients: { name: string; quantity: string }[]
+  steps: string[]
+  cuisine?: string
+  dietary?: string[]
+  isPublic?: boolean
+}
+
+export async function createRecipe(data: CreateRecipeInput, token: string) {
+  return apiFetch("/api/recipe", { method: "POST", body: data, token }) as Promise<{ recipe: RecipeData }>
 }

@@ -14,6 +14,7 @@ export default function Nav() {
         </Link>
         <div className="flex items-center gap-4 text-sm font-medium">
           <a href="/generate" className="hover:text-emerald-600 transition-colors">Generate</a>
+          <a href="/post" className="hover:text-emerald-600 transition-colors">Post Recipe</a>
           <a href="/saved" className="hover:text-emerald-600 transition-colors">Saved</a>
           <a href="/browse" className="hover:text-emerald-600 transition-colors">Browse</a>
           <a href="/about" className="hover:text-emerald-600 transition-colors">About</a>
