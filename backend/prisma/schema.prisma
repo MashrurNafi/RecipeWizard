@@ -5,18 +5,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Recipe {
-  id          String   @id @default(cuid())
-  title       String
-  servings    Int
-  timeMinutes Int
-  ingredients Json
-  steps       Json
-  cuisine     String?
-  dietary     String[]
-  createdAt   DateTime @default(now())
-  userId      String
-  isPublic    Boolean  @default(true)
-}
+
+

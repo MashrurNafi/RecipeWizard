@@ -1,0 +1,19 @@
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+}
+
+model User {
+  id               String           @id
+  email            String?          @unique
+  firstName        String?
+  lastName         String?
+  imageUrl         String?
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  recipes      Recipe[]
+  savedRecipes SavedRecipe[]
+  reviews      Review[]
+}

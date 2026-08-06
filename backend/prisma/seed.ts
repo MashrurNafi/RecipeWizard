@@ -1,3 +1,4 @@
+import "dotenv/config"
 import { PrismaNeon } from "@prisma/adapter-neon"
 import { PrismaClient } from "../src/generated/prisma/client"
 
@@ -167,6 +168,20 @@ const SEED_RECIPES = [
 ]
 
 async function main() {
+  console.log("Seeding users...")
+
+  const seedUser = await prisma.user.upsert({
+    where: { id: "seed" },
+    update: {},
+    create: {
+      id: "seed",
+      email: "seed@recipewizard.dev",
+      firstName: "Recipe",
+      lastName: "Wizard",
+    },
+  })
+  console.log(`  Ready: ${seedUser.id}`)
+
   console.log("Seeding recipes...")
 
   for (const recipe of SEED_RECIPES) {
