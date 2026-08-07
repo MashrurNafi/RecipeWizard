@@ -5,7 +5,10 @@ import {
   deleteRecipe,
   getPublicRecipes,
   getRecipeById,
+  getTrashedRecipes,
   getUserRecipes,
+  purgeRecipe,
+  restoreRecipe,
   updateRecipe,
 } from "./recipe.service"
 
@@ -76,6 +79,33 @@ export async function update(req: Request, res: Response) {
 export async function remove(req: Request, res: Response) {
   try {
     await deleteRecipe(req.params.id, req.userId!)
+    res.json({ success: true })
+  } catch (error) {
+    handleError(res, error)
+  }
+}
+
+export async function getTrash(req: Request, res: Response) {
+  try {
+    const recipes = await getTrashedRecipes(req.userId!)
+    res.json({ recipes })
+  } catch (error) {
+    handleError(res, error)
+  }
+}
+
+export async function restore(req: Request, res: Response) {
+  try {
+    await restoreRecipe(req.params.id, req.userId!)
+    res.json({ success: true })
+  } catch (error) {
+    handleError(res, error)
+  }
+}
+
+export async function purge(req: Request, res: Response) {
+  try {
+    await purgeRecipe(req.params.id, req.userId!)
     res.json({ success: true })
   } catch (error) {
     handleError(res, error)

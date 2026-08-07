@@ -34,6 +34,7 @@ export interface RecipeData {
   isPublic: boolean
   source: "AI" | "MANUAL"
   createdAt: string
+  deletedAt?: string | null
   averageRating?: number | null
   reviewCount?: number
   author?: {
@@ -51,12 +52,45 @@ export async function getUserRecipes(token: string) {
   return apiFetch("/api/recipe", { token }) as Promise<{ recipes: RecipeData[] }>
 }
 
+export async function getTrashedRecipes(token: string) {
+  return apiFetch("/api/recipe/trash", { token }) as Promise<{ recipes: RecipeData[] }>
+}
+
+export async function restoreRecipe(id: string, token: string) {
+  return apiFetch(`/api/recipe/trash/${id}/restore`, { method: "POST", token }) as Promise<{ success: boolean }>
+}
+
+export async function deleteRecipeForever(id: string, token: string) {
+  return apiFetch(`/api/recipe/trash/${id}`, { method: "DELETE", token }) as Promise<{ success: boolean }>
+}
+
 export async function getRecipe(id: string) {
   return apiFetch(`/api/recipe/${id}`) as Promise<{ recipe: RecipeData }>
 }
 
 export async function deleteRecipe(id: string, token: string) {
   return apiFetch(`/api/recipe/${id}`, { method: "DELETE", token }) as Promise<{ success: boolean }>
+}
+
+export interface SavedRecipeEntry {
+  id: string
+  recipeId: string
+  savedAt: string
+  recipe: RecipeData
+}
+
+export async function getSavedRecipes(token: string) {
+  return apiFetch("/api/saved-recipes", { token }) as Promise<{ saved: SavedRecipeEntry[] }>
+}
+
+export async function saveRecipe(recipeId: string, token: string) {
+  return apiFetch("/api/saved-recipes", { method: "POST", body: { recipeId }, token }) as Promise<{
+    saved: SavedRecipeEntry
+  }>
+}
+
+export async function unsaveRecipe(recipeId: string, token: string) {
+  return apiFetch(`/api/saved-recipes/${recipeId}`, { method: "DELETE", token }) as Promise<{ success: boolean }>
 }
 
 export async function generateRecipe(
