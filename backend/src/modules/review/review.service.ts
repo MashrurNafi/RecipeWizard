@@ -19,14 +19,15 @@ export async function getReviewsForRecipe(recipeId: string) {
   })
 
   const averageRating = reviews.length
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    ? Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10) / 10
     : null
 
   return { reviews, averageRating }
 }
 
 export async function createReview(recipeId: string, userId: string, rating: number, comment?: string) {
-  await assertRecipeExists(recipeId)
+  const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } })
+  if (!recipe) throw new HttpError(404, "Recipe not found")
 
   try {
     return await prisma.review.create({

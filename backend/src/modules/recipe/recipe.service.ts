@@ -13,28 +13,52 @@ export type RecipeCreateInput = {
   isPublic?: boolean
 }
 
+function withRatingStats<T extends { reviews: { rating: number }[] }>(recipe: T) {
+  const { reviews, ...rest } = recipe
+  const reviewCount = reviews.length
+  const averageRating = reviewCount
+    ? Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount) * 10) / 10
+    : null
+  return { ...rest, averageRating, reviewCount }
+}
+
 export async function getPublicRecipes() {
-  return prisma.recipe.findMany({
+  const recipes = await prisma.recipe.findMany({
     where: { isPublic: true },
     orderBy: { createdAt: "desc" },
     take: 50,
-    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
+    include: {
+      author: { select: { firstName: true, lastName: true, imageUrl: true } },
+      reviews: { select: { rating: true } },
+    },
   })
+
+  return recipes.map(withRatingStats)
 }
 
 export async function getUserRecipes(userId: string) {
-  return prisma.recipe.findMany({
+  const recipes = await prisma.recipe.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
+    include: {
+      author: { select: { firstName: true, lastName: true, imageUrl: true } },
+      reviews: { select: { rating: true } },
+    },
   })
+
+  return recipes.map(withRatingStats)
 }
 
 export async function getRecipeById(id: string) {
-  return prisma.recipe.findUnique({
+  const recipe = await prisma.recipe.findUnique({
     where: { id },
-    include: { author: { select: { firstName: true, lastName: true, imageUrl: true } } },
+    include: {
+      author: { select: { firstName: true, lastName: true, imageUrl: true } },
+      reviews: { select: { rating: true } },
+    },
   })
+
+  return recipe ? withRatingStats(recipe) : null
 }
 
 export async function createRecipe(userId: string, data: RecipeCreateInput) {

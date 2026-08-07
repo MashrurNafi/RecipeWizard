@@ -1,4 +1,5 @@
 import Link from "next/link"
+import StarRating from "./StarRating"
 
 interface RecipeCardProps {
   id: string
@@ -11,6 +12,8 @@ interface RecipeCardProps {
   authorFirstName?: string | null
   authorImageUrl?: string | null
   source?: "AI" | "MANUAL" | null
+  averageRating?: number | null
+  reviewCount?: number
 }
 
 const CUISINE_EMOJI: Record<string, string> = {
@@ -29,7 +32,7 @@ const CUISINE_EMOJI: Record<string, string> = {
 }
 
 export default function RecipeCard({
-  id, title, cuisine, timeMinutes, servings, dietary, showUser, authorFirstName, authorImageUrl, source,
+  id, title, cuisine, timeMinutes, servings, dietary, showUser, authorFirstName, authorImageUrl, source, averageRating, reviewCount,
 }: RecipeCardProps) {
   const emoji = cuisine ? CUISINE_EMOJI[cuisine.toLowerCase()] : null
 
@@ -64,6 +67,20 @@ export default function RecipeCard({
             </span>
           ))}
         </div>
+      )}
+      {averageRating !== null && averageRating !== undefined && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <StarRating value={averageRating} size="sm" />
+          <span className="text-xs font-semibold text-zinc-600">{averageRating.toFixed(1)}</span>
+          {reviewCount !== undefined && reviewCount > 0 && (
+            <span className="text-xs text-zinc-400">
+              ({reviewCount} review{reviewCount === 1 ? "" : "s"})
+            </span>
+          )}
+        </div>
+      )}
+      {averageRating === null && reviewCount !== undefined && reviewCount === 0 && (
+        <p className="mt-3 text-xs text-zinc-400">No ratings yet</p>
       )}
       {showUser && (
         <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3">
