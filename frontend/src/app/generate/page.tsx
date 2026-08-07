@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@clerk/nextjs"
+import LoadingScreen from "@/components/LoadingScreen"
 
 const DIETARY_OPTIONS = ["vegan", "vegetarian", "gluten-free", "keto", "paleo", "dairy-free", "low-carb", "nut-free"]
 const CUISINE_OPTIONS = [
@@ -12,13 +13,17 @@ const CUISINE_OPTIONS = [
 
 export default function GeneratePage() {
   const router = useRouter()
-  const { isSignedIn, getToken } = useAuth()
+  const { isSignedIn, isLoaded, getToken } = useAuth()
   const [ingredientsInput, setIngredientsInput] = useState("")
   const [dietary, setDietary] = useState<string[]>([])
   const [cuisine, setCuisine] = useState("")
   const [timeMinutes, setTimeMinutes] = useState(30)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  if (!isLoaded) {
+    return <LoadingScreen />
+  }
 
   if (!isSignedIn) {
     return (

@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@clerk/nextjs"
 import { createRecipe } from "@/lib/api"
+import LoadingScreen from "@/components/LoadingScreen"
 
 const DIETARY_OPTIONS = ["vegan", "vegetarian", "gluten-free", "keto", "paleo", "dairy-free", "low-carb", "nut-free"]
 const CUISINE_OPTIONS = [
@@ -18,7 +19,7 @@ interface IngredientRow {
 
 export default function PostRecipePage() {
   const router = useRouter()
-  const { isSignedIn, getToken } = useAuth()
+  const { isSignedIn, isLoaded, getToken } = useAuth()
   const [title, setTitle] = useState("")
   const [servings, setServings] = useState(2)
   const [timeMinutes, setTimeMinutes] = useState(30)
@@ -28,6 +29,10 @@ export default function PostRecipePage() {
   const [steps, setSteps] = useState<string[]>([""])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  if (!isLoaded) {
+    return <LoadingScreen />
+  }
 
   if (!isSignedIn) {
     return (
