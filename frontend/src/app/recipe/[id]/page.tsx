@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import DeleteButton from "./DeleteButton"
+import SaveButton from "./SaveButton"
 import ReviewSection from "@/components/ReviewSection"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001"
@@ -15,11 +16,26 @@ export default async function RecipePage({ params }: PageProps) {
   const { id } = await params
   const session = await auth()
   const userId = session.userId
+  const token = userId ? await session.getToken() : null
 
   const res = await fetch(`${BACKEND_URL}/api/recipe/${id}`, { cache: "no-store" })
   if (!res.ok) notFound()
   const data = await res.json()
   const recipe = data.recipe
+
+  let isSaved = false
+  if (token) {
+    try {
+      const savedRes = await fetch(`${BACKEND_URL}/api/saved-recipes`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      })
+      if (savedRes.ok) {
+        const savedData = await savedRes.json()
+        isSaved = savedData.saved.some((entry: { recipeId: string }) => entry.recipeId === recipe.id)
+      }
+    } catch {}
+  }
 
   const ingredients = recipe.ingredients as { name: string; quantity: string }[]
   const steps = recipe.steps as string[]
@@ -48,7 +64,10 @@ export default async function RecipePage({ params }: PageProps) {
             </div>
           )}
         </div>
-        {isOwner && <DeleteButton recipeId={recipe.id} />}
+        <div className="flex shrink-0 items-center gap-2">
+          {userId && <SaveButton recipeId={recipe.id} initialSaved={isSaved} />}
+          {isOwner && <DeleteButton recipeId={recipe.id} />}
+        </div>
       </div>
 
       <section className="mb-8">

@@ -16,6 +16,7 @@ model Recipe {
   userId      String
   isPublic    Boolean  @default(true)
   source      RecipeSource @default(AI)
+  deletedAt   DateTime?
 
   author   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   savedBy  SavedRecipe[]

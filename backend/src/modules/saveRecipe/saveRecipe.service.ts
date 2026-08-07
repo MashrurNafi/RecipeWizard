@@ -1,13 +1,26 @@
 import { Prisma } from "../../generated/prisma/client"
 import { prisma } from "../../lib/prisma"
 import { HttpError } from "../../lib/httpError"
+import { withRatingStats } from "../recipe/recipe.service"
 
 export async function getSavedRecipes(userId: string) {
-  return prisma.savedRecipe.findMany({
-    where: { userId },
-    include: { recipe: true },
+  const saved = await prisma.savedRecipe.findMany({
+    where: { userId, recipe: { deletedAt: null } },
+    include: {
+      recipe: {
+        include: {
+          author: { select: { firstName: true, lastName: true, imageUrl: true } },
+          reviews: { select: { rating: true } },
+        },
+      },
+    },
     orderBy: { savedAt: "desc" },
   })
+
+  return saved.map((entry) => ({
+    ...entry,
+    recipe: withRatingStats(entry.recipe),
+  }))
 }
 
 export async function saveRecipe(userId: string, recipeId: string) {

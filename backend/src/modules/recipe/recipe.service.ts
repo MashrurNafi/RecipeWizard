@@ -13,7 +13,7 @@ export type RecipeCreateInput = {
   isPublic?: boolean
 }
 
-function withRatingStats<T extends { reviews: { rating: number }[] }>(recipe: T) {
+export function withRatingStats<T extends { reviews: { rating: number }[] }>(recipe: T) {
   const { reviews, ...rest } = recipe
   const reviewCount = reviews.length
   const averageRating = reviewCount
@@ -24,7 +24,7 @@ function withRatingStats<T extends { reviews: { rating: number }[] }>(recipe: T)
 
 export async function getPublicRecipes() {
   const recipes = await prisma.recipe.findMany({
-    where: { isPublic: true },
+    where: { isPublic: true, deletedAt: null },
     include: {
       author: { select: { firstName: true, lastName: true, imageUrl: true } },
       reviews: { select: { rating: true } },
@@ -38,7 +38,7 @@ export async function getPublicRecipes() {
 
 export async function getUserRecipes(userId: string) {
   const recipes = await prisma.recipe.findMany({
-    where: { userId },
+    where: { userId, deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: {
       author: { select: { firstName: true, lastName: true, imageUrl: true } },
@@ -50,8 +50,8 @@ export async function getUserRecipes(userId: string) {
 }
 
 export async function getRecipeById(id: string) {
-  const recipe = await prisma.recipe.findUnique({
-    where: { id },
+  const recipe = await prisma.recipe.findFirst({
+    where: { id, deletedAt: null },
     include: {
       author: { select: { firstName: true, lastName: true, imageUrl: true } },
       reviews: { select: { rating: true } },
@@ -62,19 +62,27 @@ export async function getRecipeById(id: string) {
 }
 
 export async function createRecipe(userId: string, data: RecipeCreateInput) {
-  return prisma.recipe.create({
-    data: {
-      title: data.title,
-      servings: data.servings,
-      timeMinutes: data.timeMinutes,
-      ingredients: data.ingredients,
-      steps: data.steps,
-      cuisine: data.cuisine ?? null,
-      dietary: data.dietary ?? [],
-      isPublic: data.isPublic ?? true,
-      source: "MANUAL" as const,
-      userId,
-    },
+  return prisma.$transaction(async (tx) => {
+    const recipe = await tx.recipe.create({
+      data: {
+        title: data.title,
+        servings: data.servings,
+        timeMinutes: data.timeMinutes,
+        ingredients: data.ingredients,
+        steps: data.steps,
+        cuisine: data.cuisine ?? null,
+        dietary: data.dietary ?? [],
+        isPublic: data.isPublic ?? true,
+        source: "MANUAL" as const,
+        userId,
+      },
+    })
+
+    await tx.savedRecipe.create({
+      data: { userId, recipeId: recipe.id },
+    })
+
+    return recipe
   })
 }
 
@@ -103,6 +111,47 @@ export async function deleteRecipe(id: string, userId: string) {
   if (!existing) throw new HttpError(404, "Recipe not found")
   if (existing.userId !== userId) throw new HttpError(403, "Forbidden")
 
+  await prisma.recipe.update({ where: { id }, data: { deletedAt: new Date() } })
+  return true
+}
+
+export async function getTrashedRecipes(userId: string) {
+  const recipes = await prisma.recipe.findMany({
+    where: { userId, deletedAt: { not: null } },
+    orderBy: { deletedAt: "desc" },
+    include: {
+      author: { select: { firstName: true, lastName: true, imageUrl: true } },
+      reviews: { select: { rating: true } },
+    },
+  })
+
+  return recipes.map(withRatingStats)
+}
+
+export async function restoreRecipe(id: string, userId: string) {
+  const existing = await prisma.recipe.findUnique({ where: { id } })
+  if (!existing) throw new HttpError(404, "Recipe not found")
+  if (existing.userId !== userId) throw new HttpError(403, "Forbidden")
+  if (!existing.deletedAt) throw new HttpError(400, "Recipe is not in the trash")
+
+  await prisma.recipe.update({ where: { id }, data: { deletedAt: null } })
+  return true
+}
+
+export async function purgeRecipe(id: string, userId: string) {
+  const existing = await prisma.recipe.findUnique({ where: { id } })
+  if (!existing) throw new HttpError(404, "Recipe not found")
+  if (existing.userId !== userId) throw new HttpError(403, "Forbidden")
+  if (!existing.deletedAt) throw new HttpError(400, "Recipe is not in the trash")
+
   await prisma.recipe.delete({ where: { id } })
   return true
+}
+
+export async function purgeExpiredTrash(retentionMs = 30 * 24 * 60 * 60 * 1000) {
+  const cutoff = new Date(Date.now() - retentionMs)
+  const result = await prisma.recipe.deleteMany({
+    where: { deletedAt: { not: null, lt: cutoff } },
+  })
+  return result.count
 }

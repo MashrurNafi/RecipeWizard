@@ -19,7 +19,7 @@ export default function DeleteButton({ recipeId }: { recipeId: string }) {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
       if (res.ok) {
-        router.push("/saved")
+        router.push("/trash")
       } else {
         setDeleting(false)
       }

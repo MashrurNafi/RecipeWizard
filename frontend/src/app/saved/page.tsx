@@ -14,17 +14,18 @@ export default async function SavedPage() {
   let recipes: {
     id: string; title: string; cuisine: string | null; timeMinutes: number
     servings: number; dietary: string[]; source: "AI" | "MANUAL"
+    averageRating: number | null; reviewCount: number
     author: { firstName: string | null; imageUrl: string | null } | null
   }[] = []
   if (token) {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/recipe`, {
+      const res = await fetch(`${BACKEND_URL}/api/saved-recipes`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       })
       if (res.ok) {
         const data = await res.json()
-        recipes = data.recipes
+        recipes = data.saved.map((entry: { recipe: (typeof recipes)[number] }) => entry.recipe)
       }
     } catch {}
   }
@@ -52,7 +53,7 @@ export default async function SavedPage() {
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
               Saved Recipes
             </h1>
-            <p className="mt-1 text-zinc-600">Your generated recipes, all in one place.</p>
+            <p className="mt-1 text-zinc-600">Your saved recipes, all in one place.</p>
           </div>
 
           {userId && recipes.length > 0 && (
@@ -82,7 +83,7 @@ export default async function SavedPage() {
               📭
             </div>
             <p className="mb-1 text-lg font-semibold text-zinc-800">No saved recipes yet</p>
-            <p className="mb-5 text-sm text-zinc-500">Generate your first recipe to see it here.</p>
+            <p className="mb-5 text-sm text-zinc-500">Post a recipe and it will be saved automatically, or save an AI-generated recipe.</p>
             <Link
               href="/generate"
               className="inline-flex items-center rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-600/20 active:scale-95"
@@ -110,6 +111,8 @@ export default async function SavedPage() {
                   authorFirstName={recipe.author?.firstName}
                   authorImageUrl={recipe.author?.imageUrl}
                   source={recipe.source}
+                  averageRating={recipe.averageRating}
+                  reviewCount={recipe.reviewCount}
                 />
               ))}
             </div>
