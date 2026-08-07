@@ -33,7 +33,13 @@ export async function getPublicRecipes() {
 
   return recipes
     .map(withRatingStats)
-    .sort((a, b) => (b.averageRating ?? -1) - (a.averageRating ?? -1))
+    .sort((a, b) => {
+      const ratedA = a.averageRating !== null
+      const ratedB = b.averageRating !== null
+      if (ratedA !== ratedB) return ratedA ? -1 : 1
+      if (ratedA) return (b.averageRating ?? 0) - (a.averageRating ?? 0)
+      return b.createdAt.getTime() - a.createdAt.getTime()
+    })
 }
 
 export async function getUserRecipes(userId: string) {
