@@ -11,7 +11,7 @@ interface ReviewSectionProps {
 }
 
 export default function ReviewSection({ recipeId, currentUserId }: ReviewSectionProps) {
-  const { isSignedIn, getToken } = useAuth()
+  const { isSignedIn, isLoaded, getToken } = useAuth()
   const [reviews, setReviews] = useState<ReviewData[]>([])
   const [averageRating, setAverageRating] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -121,11 +121,16 @@ export default function ReviewSection({ recipeId, currentUserId }: ReviewSection
         )}
       </div>
 
-      {!isSignedIn && (
+      {!isLoaded ? (
+        <p className="mb-6 flex items-center gap-2 rounded-lg bg-zinc-50 px-4 py-3 text-sm text-zinc-500">
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          Checking your account...
+        </p>
+      ) : !isSignedIn ? (
         <p className="mb-6 rounded-lg bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
           Sign in to rate and review this recipe.
         </p>
-      )}
+      ) : null}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="mb-8 rounded-xl border border-zinc-200 bg-white p-5">

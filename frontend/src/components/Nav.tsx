@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs"
 
 export default function Nav() {
-  const { isSignedIn } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth()
 
   return (
     <header className="border-b border-zinc-200 bg-white">
@@ -19,7 +19,9 @@ export default function Nav() {
           <a href="/trash" className="hover:text-emerald-600 transition-colors">Trash</a>
           <a href="/browse" className="hover:text-emerald-600 transition-colors">Browse</a>
           <a href="/about" className="hover:text-emerald-600 transition-colors">About</a>
-          {isSignedIn ? (
+          {!isLoaded ? (
+            <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          ) : isSignedIn ? (
             <div className="flex items-center gap-2">
               <a href="/profile" className="hover:text-emerald-600 transition-colors">Profile</a>
               <UserButton />
