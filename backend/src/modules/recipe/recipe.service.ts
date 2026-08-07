@@ -25,15 +25,15 @@ function withRatingStats<T extends { reviews: { rating: number }[] }>(recipe: T)
 export async function getPublicRecipes() {
   const recipes = await prisma.recipe.findMany({
     where: { isPublic: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
     include: {
       author: { select: { firstName: true, lastName: true, imageUrl: true } },
       reviews: { select: { rating: true } },
     },
   })
 
-  return recipes.map(withRatingStats)
+  return recipes
+    .map(withRatingStats)
+    .sort((a, b) => (b.averageRating ?? -1) - (a.averageRating ?? -1))
 }
 
 export async function getUserRecipes(userId: string) {
