@@ -9,6 +9,7 @@ export default async function BrowsePage() {
   let recipes: {
     id: string; title: string; cuisine: string | null; timeMinutes: number
     servings: number; dietary: string[]; source: "AI" | "MANUAL"
+    averageRating: number | null; reviewCount: number
     author: { firstName: string | null; imageUrl: string | null } | null
   }[] = []
   try {
@@ -51,6 +52,8 @@ export default async function BrowsePage() {
               authorFirstName={recipe.author?.firstName}
               authorImageUrl={recipe.author?.imageUrl}
               source={recipe.source}
+              averageRating={recipe.averageRating}
+              reviewCount={recipe.reviewCount}
             />
           ))}
         </div>

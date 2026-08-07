@@ -34,6 +34,8 @@ export interface RecipeData {
   isPublic: boolean
   source: "AI" | "MANUAL"
   createdAt: string
+  averageRating?: number | null
+  reviewCount?: number
   author?: {
     firstName: string | null
     lastName: string | null
@@ -77,4 +79,40 @@ export interface CreateRecipeInput {
 
 export async function createRecipe(data: CreateRecipeInput, token: string) {
   return apiFetch("/api/recipe", { method: "POST", body: data, token }) as Promise<{ recipe: RecipeData }>
+}
+
+export interface ReviewData {
+  id: string
+  rating: number
+  comment: string | null
+  userId: string
+  recipeId: string
+  createdAt: string
+  user: {
+    id: string
+    firstName: string | null
+    lastName: string | null
+    imageUrl: string | null
+  }
+}
+
+export interface ReviewsResponse {
+  reviews: ReviewData[]
+  averageRating: number | null
+}
+
+export async function getReviews(recipeId: string) {
+  return apiFetch(`/api/recipe/${recipeId}/reviews`) as Promise<ReviewsResponse>
+}
+
+export async function createReview(recipeId: string, data: { rating: number; comment?: string }, token: string) {
+  return apiFetch(`/api/recipe/${recipeId}/reviews`, { method: "POST", body: data, token }) as Promise<{ review: ReviewData }>
+}
+
+export async function updateReview(recipeId: string, reviewId: string, data: { rating: number; comment?: string }, token: string) {
+  return apiFetch(`/api/recipe/${recipeId}/reviews/${reviewId}`, { method: "PATCH", body: data, token }) as Promise<{ review: ReviewData }>
+}
+
+export async function deleteReview(recipeId: string, reviewId: string, token: string) {
+  return apiFetch(`/api/recipe/${recipeId}/reviews/${reviewId}`, { method: "DELETE", token }) as Promise<{ success: boolean }>
 }

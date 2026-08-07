@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { notFound } from "next/navigation"
 import DeleteButton from "./DeleteButton"
+import ReviewSection from "@/components/ReviewSection"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001"
 
@@ -23,7 +24,7 @@ export default async function RecipePage({ params }: PageProps) {
   const ingredients = recipe.ingredients as { name: string; quantity: string }[]
   const steps = recipe.steps as string[]
   const dietary = recipe.dietary as string[]
-  const isOwner = userId && recipe.userId === userId
+  const isOwner = Boolean(userId && recipe.userId === userId)
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -82,6 +83,8 @@ export default async function RecipePage({ params }: PageProps) {
           <p className="mb-2 text-sm text-zinc-600">Sign in to save and manage your recipes.</p>
         </div>
       )}
+
+      <ReviewSection recipeId={recipe.id} currentUserId={userId ?? null} />
     </div>
   )
 }
