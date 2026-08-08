@@ -1,21 +1,32 @@
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
-import Providers from "./providers"
-import Nav from "@/components/Nav"
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import Providers from "./providers";
+import Nav from "@/components/Nav";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "RecipeWizard — AI-Powered Recipe Generator",
-  description: "Generate delicious recipes from ingredients you have on hand, powered by AI.",
-}
+  description:
+    "Generate delicious recipes from ingredients you have on hand, powered by AI.",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <ClerkRootLayout>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
         <body className="min-h-full flex flex-col bg-zinc-50 font-sans text-zinc-900">
           <Nav />
           <main className="flex-1">{children}</main>
@@ -35,14 +46,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </span>
                 </div>
 
-                <p className="text-sm text-zinc-500">
-                  Powered by{" "}
-                  <span className="font-medium text-zinc-700">Groq AI</span>
-                </p>
-
                 <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                   <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                  <span>&copy; {new Date().getFullYear()} RecipeWizard. All rights reserved.</span>
+                  <span>
+                    &copy; {new Date().getFullYear()} RecipeWizard. All rights
+                    reserved.
+                  </span>
                 </div>
               </div>
             </div>
@@ -50,11 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </body>
       </html>
     </ClerkRootLayout>
-  )
+  );
 }
 
 function ClerkRootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <Providers>{children}</Providers>
-  )
+  return <Providers>{children}</Providers>;
 }

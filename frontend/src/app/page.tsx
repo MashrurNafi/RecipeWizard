@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -55,7 +55,13 @@ export default function HomePage() {
                 strokeLinecap="round"
               />
               <defs>
-                <linearGradient id="underline-gradient" x1="0" y1="0" x2="120" y2="0">
+                <linearGradient
+                  id="underline-gradient"
+                  x1="0"
+                  y1="0"
+                  x2="120"
+                  y2="0"
+                >
                   <stop offset="0%" stopColor="#059669" />
                   <stop offset="50%" stopColor="#14b8a6" />
                   <stop offset="100%" stopColor="#059669" />
@@ -67,8 +73,9 @@ export default function HomePage() {
 
         {/* Subtitle */}
         <p className="mb-8 max-w-lg text-lg leading-relaxed text-zinc-600">
-          Tell us what&apos;s in your kitchen and we&apos;ll generate a delicious recipe tailored to your
-          dietary needs, preferred cuisine, and time constraints.
+          Tell us what&apos;s in your kitchen and we&apos;ll generate a
+          delicious recipe tailored to your dietary needs, preferred cuisine,
+          and time constraints.
         </p>
 
         {/* Call to Action Button */}
@@ -126,5 +133,5 @@ export default function HomePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
